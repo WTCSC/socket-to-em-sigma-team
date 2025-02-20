@@ -16,9 +16,9 @@ def handle_client(client, addr):
          print(f"🟥 Error handling client {addr}: {e}")
 
     finally:
-        print("🟨 Client disconnecting...")
+        print("🟨 A client is disconnecting...")
         client.close()
-        print(f"🟨 Client {addr} closed")
+        print(f"🟧 Client {addr} closed")
 
 def init_server():
     # User enters ip address and validates format
@@ -61,9 +61,11 @@ def init_server():
             thread = threading.Thread(target=handle_client, args=(client, addr))
             thread.start()
     except KeyboardInterrupt:
-        print("🟨 Server shutting down...")
+        print("🟨 Shutting down server...")
     finally:
         server.close()
+        print("🟧 Server shut down.")
 
 if __name__ == "__main__":
+    print("AI Chat Room, hit ctrl + c to shutdown server at any time")
     init_server()
