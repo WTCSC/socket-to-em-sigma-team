@@ -2,6 +2,57 @@ import socket
 import threading
 import ipaddress
 
+# Validates inputted IP for IPv4 format
+def validate_ip(ip_input):
+    try:
+        ipaddress.IPv4Address(ip_input)
+        return True
+
+    except ipaddress.AddressValueError:
+        print("Invalid IPv4 address. Please try again.")
+        return False
+
+# Validates inputted port:
+def validate_port(port_string_input):
+    # Checks that all characters in the string are numbers
+    if not port_string_input.isnumeric():
+        print("🟥 Please enter a valid integer for the port.")
+        return False
+
+    # Checks if public port
+    elif int(port_string_input) < 1024 or int(port_string_input) > 65535:
+        print("🟥 Please enter a valid, public port (1024-65535).")
+        return False        
+
+    else:
+        return True
+
+def init_server(host, port):
+    # Create socket object
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Bind the server
+    server.bind((host, port))
+
+    # Listens for connections
+    server.listen(5)
+    print(f"🟩 Server listening on {host}:{port}")
+
+    # Uses threading to accept multiple clients
+    try:
+        while True:
+            client, addr = server.accept()
+            thread = threading.Thread(target=handle_client, args=(client, addr))
+            thread.start()
+
+    except KeyboardInterrupt:
+        print("🟨 Shutting down server...")
+
+    finally:
+        server.close()
+        print("🟧 Server shut down.")
+
+# Recieves data from clients and echos back
 def handle_client(client, addr):
     print(f"🟩 Accepted connection from {addr}")
     try:
@@ -20,52 +71,37 @@ def handle_client(client, addr):
         client.close()
         print(f"🟧 Client {addr} closed")
 
-def init_server():
-    # User enters ip address and validates format
+def main():
+    # Localhost address
+    hostname = socket.gethostname()
+    host = socket.gethostbyname(hostname)
+
+    # Gets user inputted IP and validates it for correct IPv4 format
     while True:
-        host = input("Enter desired IP address to connect to OR leave blank for localhost connection: ")
-        if host == '':
-            hostname = socket.gethostname()
-            host = socket.gethostbyname(hostname)
-            print(host)
-        else:
-            pass
-        try:
-            ipaddress.IPv4Address(host)
+        ip_input = input(f"Enter desired IP address to connect to OR leave blank for localhost connection ({host}): ")
+        
+        # If user chooses localhost connection
+        if ip_input == '':
             break
-        except ipaddress.AddressValueError:
-            print("🟥 Invalid IPv4 address. Please try again.")
-            
-    # Get port to be listened on
+
+        # Breaks out of loop if IP is valid
+        valid_ip = validate_ip(ip_input)
+        if valid_ip:
+            host = ip_input
+            break
+
+    # Input and validation for port
     while True:
-        try:
-            port = int(input("Enter port: "))
+        port_string_input = input("Enter port: ")
+
+        # Breaks out of loop if port is valid
+        valid_port = validate_port(port_string_input)
+        if valid_port:
+            port = int(port_string_input)
             break
-        except ValueError:
-            print("🟥 Please enter a valid integer for the port.")
 
-    # Create socket object
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # Bind the server
-    server.bind((host, port))
-
-    # Listens for connections
-    server.listen(5)
-    print(f"🟩 Server listening on {host}:{port}")
-
-    # Accept any clients that connect and enable threading to have multiple clients connect
-    try:
-        while True:
-            client, addr = server.accept()
-            thread = threading.Thread(target=handle_client, args=(client, addr))
-            thread.start()
-    except KeyboardInterrupt:
-        print("🟨 Shutting down server...")
-    finally:
-        server.close()
-        print("🟧 Server shut down.")
+    init_server(host, port)
 
 if __name__ == "__main__":
     print("AI Chat Room, hit ctrl + c to shutdown server at any time")
-    init_server()
+    main()
