@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scott Chat</title>
+  <style>
+    /* Basic reset and styling */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #fff;
+      overflow: hidden;
+    }
+    /* Chat container setup */
+    .chat-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      z-index: 1;
+    }
+    /* Server connection info (populated by server-side templating) */
+    .server-info {
+      padding: 10px;
+      background: #e9e9e9;
+      border-bottom: 1px solid #ccc;
+      font-size: 14px;
+      text-align: center;
+      z-index: 2;
+    }
+    /* Faded background text */
+    .background-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 100px;
+      color: rgba(0, 0, 0, 0.1);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 0;
+    }
+    /* Area for incoming messages */
+    .messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      position: relative;
+      z-index: 1;
+    }
+    /* Message input area */
+    .input-box {
+      padding: 10px;
+      background: #f1f1f1;
+      border-top: 1px solid #ccc;
+      z-index: 2;
+    }
+    .input-box form {
+      margin: 0;
+    }
+    .input-box input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <!-- Server connection info (placeholders to be filled by your server) -->
+    <div class="server-info">
+      Connected to: <span id="server-ip">{{server_ip}}</span>:<span id="server-port">{{server_port}}</span>
+    </div>
+
+    <!-- Big faded background text -->
+    <div class="background-text">Scott Chat</div>
+
+    <!-- Placeholder for incoming messages -->
+    <div class="messages">
+      <!-- Incoming messages from other users will appear here -->
+      <!-- You can integrate your message receiving logic here -->
+    </div>
+
+    <!-- Message sending area -->
+    <div class="input-box">
+      <!-- The form action URL is a placeholder for sending messages to your server -->
+      <form action="http://{{server_ip}}:{{server_port}}/send" method="post">
+        <input type="text" name="message" placeholder="Scott Message:" autocomplete="off" />
+      </form>
+      <!-- 
+        Placeholder: Add your send-message logic here.
+        For example, you could add JavaScript to intercept the form submit,
+        send the message via AJAX or WebSocket, and then clear the input.
+      -->
+    </div>
+  </div>
+
+  <!-- 
+    Placeholder: Add your message receiving logic here.
+    For instance, you might connect to a WebSocket endpoint at ws://{{server_ip}}:{{server_port}}/ws
+    to receive incoming messages and then append them into the .message

@@ -1,20 +1,11 @@
 import socket
 import ipaddress
 import sys
-import curses
 
-def disconnect_client(client, stdscr):
+def disconnect_client(client):
     # Close connection to server
     client.close()
-
-    # Kill all curses process's
-    curses.nocbreak()
-    stdscr.keypad(False)
-    curses.echo()
-    curses.endwin()
-
     print("🟧 Client disconnected.")
-
 
 # Validates inputted IP for IPv4 format
 def validate_ip(ip_input):
@@ -60,40 +51,13 @@ def connect_to_server(host, port):
         print(f"🟥 An error occurred: {e}")
         return False, None
 
-# Clients fully connected to server and allows data transfer
-def data_transfer(client, data):
-            client.send(data.encode())
-            response = client.recv(1024).decode()
-            print(response)
-        
-# Initializing curses for TUI
-def init_curses():
-    stdscr = curses.initscr()
-    # Prevents user input section from appearing automatically
-    curses.noecho()
+# Sending and recieving data
+def data_transfer(client, user_input, client_username):
+    user_input = (f"{client_username}: {user_input}")
+    client.send(user_input.encode())
 
-    # Respons to key presses immedietly
-    curses.cbreak()
-
-    # Enables special keys
-    stdscr.keypad(True)
-
-    # Get terminal size
-    height, width = stdscr.getmaxyx()
-
-    # Create chat window and input window
-    chat_win = curses.newwin(height - 4, width, 0, 0)
-    input_win = curses.newwin(3, width, height - 3, 0)
-
-    # Enable scrolling for the chat section
-    chat_win.scrollok(True)
-    chat_win.idlok(True)
-
-    # Divider line
-    stdscr.hline(height - 4, 0, '-', width)
-    stdscr.refresh()
-
-    return stdscr, chat_win, input_win
+    response = client.recv(1024).decode()
+    print(response)
 
 # Main loop
 def main():
@@ -125,17 +89,6 @@ def main():
             port = int(port_string_input)
             break
 
-    # Initialize curses
-    stdscr, chat_win, input_win = init_curses()
-    
-    # Attempts to connect to server, if connection fails, aborts program
-    connection_successful, client = connect_to_server(host, port)
-    if connection_successful:
-        pass
-    else:
-        curses.endwin()  # Resets terminal if connection fails
-        sys.exit("🟥 Exiting program due to error above.")
-
     # Gets a username from client 
     client_username = input("Enter a username: ")
 
@@ -143,27 +96,37 @@ def main():
     while len(client_username) > 16:
         print("Username too long (Max 16 characters), please try again.")
         client_username = input("Enter a username: ")
+    
+    # Attempts to connect to server 
+    connection_successful, client = connect_to_server(host, port)
 
-    # Welcome message when user connects
-    chat_win.addstr(f"🟩 Welcome {client_username}! Type /cmds for a list of commands\n", curses.A_BOLD)
-    chat_win.refresh()
+    # If connection fails, aborts program
+    if not connection_successful:
+        sys.exit("🟥 Exiting program due to error above.")
 
-    # Send messages and receive responses
+    # Welcome message once user connects
+    print(f"🟩 Welcome {client_username}! Type /cmds for a list of commands")
+    
+    # Sending data
     try:
         while True:
-            # User inputted message
-            data = f"{client_username}: " + input("")
-            if not data:
-                break
-
-            # Send and recieve data
-            data_transfer(client, data)
+            #user_input = f"{client_username}: " + input("Message: ")
+            user_input = input("Message: ")
+            
+            if user_input == "/cmds":
+                print("""Command List:
+Ctrl + c          Disconnect Client""")
+            if not user_input:
+                print("Message must have context!")
+            else:
+                data_transfer(client, user_input, client_username)
 
     except KeyboardInterrupt:
         print("🟨 Disconnecting client...")
 
     finally:
-        disconnect_client()
+        disconnect_client(client)
+
 
 
 if __name__ == "__main__":
