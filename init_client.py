@@ -1,9 +1,10 @@
 import socket
 import ipaddress
 import sys
+import getpass
 
+# Close connection to server
 def disconnect_client(client):
-    # Close connection to server
     client.close()
     print("🟧 Client disconnected.")
 
@@ -110,7 +111,6 @@ def main():
     # Sending data
     try:
         while True:
-            #user_input = f"{client_username}: " + input("Message: ")
             user_input = input("Message: ")
             
             if user_input == "/cmds":

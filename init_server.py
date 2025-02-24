@@ -34,7 +34,7 @@ def init_server(host, port):
     # Bind the server
     server.bind((host, port))
 
-    # Listens for connections
+    # Listens for connections (Currently 5)
     server.listen(5)
     print(f"🟩 Server listening on {host}:{port}")
 
