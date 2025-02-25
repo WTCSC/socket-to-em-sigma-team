@@ -1,7 +1,7 @@
 import socket
 import ipaddress
 import sys
-import getpass
+import threading
 
 # Close connection to server
 def disconnect_client(client):
@@ -52,14 +52,20 @@ def connect_to_server(host, port):
         print(f"🟥 An error occurred: {e}")
         return False, None
 
+# Function ran by thread to recieve data + additional error handling
+def recieve_data(client):
+    try:
+        while True:
+            response = client.recv(1024).decode()
+            print(response)
+    except Exception as e:
+        print(f"{e}")
+
 # Sending and recieving data
 def data_transfer(client, user_input, client_username):
     user_input = (f"{client_username}: {user_input}")
     client.send(user_input.encode())
-
-    response = client.recv(1024).decode()
-    print(response)
-
+    
 # Main loop
 def main():
     # Localhost address
@@ -107,7 +113,11 @@ def main():
 
     # Welcome message once user connects
     print(f"🟩 Welcome {client_username}! Type /cmds for a list of commands")
-    
+
+    # Dedicated background thread to constantly receive data.
+    recv_thread = threading.Thread(target=recieve_data, args=(client,), daemon=True)
+    recv_thread.start()
+
     # Sending data
     try:
         while True:
@@ -116,8 +126,10 @@ def main():
             if user_input == "/cmds":
                 print("""Command List:
 Ctrl + c          Disconnect Client""")
+
             if not user_input:
                 print("Message must have context!")
+
             else:
                 data_transfer(client, user_input, client_username)
 
@@ -126,8 +138,6 @@ Ctrl + c          Disconnect Client""")
 
     finally:
         disconnect_client(client)
-
-
 
 if __name__ == "__main__":
     print("AI Chat Room, enter ctrl + c to disconnect at any time")

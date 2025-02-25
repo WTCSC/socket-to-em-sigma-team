@@ -2,6 +2,9 @@ import socket
 import threading
 import ipaddress
 
+# List of clients used to echo data back to all clients
+client_list = []
+
 # Validates inputted IP for IPv4 format
 def validate_ip(ip_input):
     try:
@@ -38,10 +41,12 @@ def init_server(host, port):
     server.listen(5)
     print(f"🟩 Server listening on {host}:{port}")
 
-    # Uses threading to accept multiple clients
     try:
         while True:
             client, addr = server.accept()
+            client_list.append(client)
+
+            # Thread to handle new clients
             thread = threading.Thread(target=handle_client, args=(client, addr))
             thread.start()
 
@@ -60,8 +65,17 @@ def handle_client(client, addr):
             data = client.recv(1024)
             if not data:
                 break
+
             print(f"Received: {data.decode()} from {addr}")
-            client.send(data) # Echo back to client
+            client.send(data)
+
+            # Broadcast the message to all connected clients
+            for c in client_list[:]:  # iterate over a copy
+                try:
+                    c.send(data)
+
+                except Exception as e:
+                    print(f"Error sending message to {c}: {e}")
 
     except Exception as e:
          print(f"🟥 Error handling client {addr}: {e}")
@@ -69,6 +83,11 @@ def handle_client(client, addr):
     finally:
         print("🟨 A client is disconnecting...")
         client.close()
+
+        # Removes any clients that disconnects from the client list
+        if client in client_list:
+            client_list.remove(client)
+            
         print(f"🟧 Client {addr} closed")
 
 def main():
