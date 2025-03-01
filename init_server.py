@@ -67,7 +67,6 @@ def handle_client(client, addr):
                 break
 
             print(f"Received: {data.decode()} from {addr}")
-            client.send(data)
 
             # Broadcast the message to all connected clients
             for c in client_list[:]:  # iterate over a copy
