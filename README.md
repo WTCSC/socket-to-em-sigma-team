@@ -55,6 +55,14 @@ python3 init_client.py
 4. Enter the server's port number
 5. Choose a username (max 16 characters)
 
+### Launching the Server
+
+![Launching Server Gif](socket-to-em-server.gif)
+
+### Connecting to the Server
+
+![Connecting to Server Gif](socket-to-em-client.gif)
+
 ## Usage Guide
 
 ### Connecting to the Chat
